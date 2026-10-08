@@ -172,9 +172,54 @@ Dependencies</a> for an example of a project using the library.</p>
         clone.setAttribute('width', width);
         clone.setAttribute('height', height);
 
-        // Include styles so fonts and colors render correctly outside this page
-        var styleElem = document.createElement('style');
-        styleElem.textContent = 'text { font-family: "Liberation Sans", Verdana, Arial, Helvetica, sans-serif; font-size: 13px; }';
+        // Add explicit white background rect so transparent background doesn't render dark
+        var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('x', '0');
+        bgRect.setAttribute('y', '0');
+        bgRect.setAttribute('width', '100%');
+        bgRect.setAttribute('height', '100%');
+        bgRect.setAttribute('fill', '#ffffff');
+        clone.insertBefore(bgRect, clone.firstChild);
+
+        // Include critical visualizer CSS rules directly inside the SVG so fonts,
+        // arc strokes, labels, arrows, and tags display identical to the webpage.
+        var embeddedCss = ''
+            + 'text { font-family: "Liberation Sans", Verdana, Arial, Helvetica, sans-serif; font-size: 13px; } '
+            + 'path { pointer-events: none; } '
+            + '.span text { font-size: 10px; text-anchor: middle; font-family: "PT Sans Caption", sans-serif; } '
+            + '.span_type_label, .arc_type_label { font-size: 11px; font-family: "PT Sans Caption", sans-serif; } '
+            + '.span rect { stroke-width: 0.75; } '
+            + '.span path { fill: none; } '
+            + '.span path.curly { stroke-width: 0.5; } '
+            + '.arcs path { stroke: #989898; fill: none; stroke-width: 1; } '
+            + '.arcs .highlight path { stroke: #000000; stroke-width: 1.5; } '
+            + '.arcs text { font-size: 9px; text-anchor: middle; font-family: "PT Sans Caption", sans-serif; } '
+            + '.background0 { stroke: none; fill: #ffffff; } '
+            + '.background1 { stroke: none; fill: #eeeeee; } '
+            + '.backgroundHighlight { stroke: none; fill: #ffff99; } '
+            + '.sentnum text { fill: #999999; text-anchor: end; } '
+            + '.sentnum path { stroke: #999999; stroke-width: 1px; } ';
+
+        // Try extracting any additional rules from style-vis.css link tag
+        try {
+            for (var s = 0; s < document.styleSheets.length; s++) {
+                var sheet = document.styleSheets[s];
+                if (sheet.href && sheet.href.indexOf('style-vis.css') !== -1) {
+                    var rules = sheet.cssRules || sheet.rules;
+                    if (rules) {
+                        for (var r = 0; r < rules.length; r++) {
+                            embeddedCss += rules[r].cssText + ' ';
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            // cross-origin restriction fallback; embeddedCss already has essentials
+        }
+
+        var styleElem = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        styleElem.setAttribute('type', 'text/css');
+        styleElem.textContent = embeddedCss;
         clone.insertBefore(styleElem, clone.firstChild);
 
         return {
