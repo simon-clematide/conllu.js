@@ -27,21 +27,21 @@ var bratData = docStrict.toBrat();
 assert.strictEqual(bratData.entities.length, 6, 'Should generate 6 brat entities');
 assert(bratData.relations.length > 0, 'Should have relations');
 
-// Test 3: CoNLL-U v2 - space in FORM and LEMMA in strict mode
-var v2Strict = `1\tNew York\tNew York\tPROPN\tNNP\t_\t0\troot\t_\t_\n`;
+// Test 3: CoNLL-U v2 - space in FORM and LEMMA in strict mode (e.g. numbers with space separator like "1 234")
+var v2Strict = `1\t1 234\t1 234\tNUM\tCD\tNumType=Card\t0\troot\t_\t_\n`;
 var docV2Strict = new ConllU.Document();
 docV2Strict.parse(v2Strict);
 assert.strictEqual(docV2Strict.error, false);
-assert.strictEqual(docV2Strict.sentences[0].elements[0].form, 'New York');
-assert.strictEqual(docV2Strict.sentences[0].elements[0].lemma, 'New York');
+assert.strictEqual(docV2Strict.sentences[0].elements[0].form, '1 234');
+assert.strictEqual(docV2Strict.sentences[0].elements[0].lemma, '1 234');
 
 // Test 4: CoNLL-U v2 - space in FORM and LEMMA in loose mode with 2+ spaces
-var v2Loose = `1  New York  New York  PROPN  NNP  _  0  root  _  _\n`;
+var v2Loose = `1  1 234  1 234  NUM  CD  NumType=Card  0  root  _  _\n`;
 var docV2Loose = new ConllU.Document();
 docV2Loose.parse(v2Loose, null, false);
 assert.strictEqual(docV2Loose.error, false);
-assert.strictEqual(docV2Loose.sentences[0].elements[0].form, 'New York');
-assert.strictEqual(docV2Loose.sentences[0].elements[0].lemma, 'New York');
+assert.strictEqual(docV2Loose.sentences[0].elements[0].form, '1 234');
+assert.strictEqual(docV2Loose.sentences[0].elements[0].lemma, '1 234');
 
 // Test 5: Fallback single space in loose mode
 var looseSingle = `1  word  lemma  NOUN  NN  _  0  root  _  _\n`;
